@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rm.Game2048", "rm.Game2048\rm.Game2048.csproj", "{BB58EDF4-FB9B-4528-B652-76F83F63412D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{9AA59B67-E572-403B-835D-B33F30F346DA}"
+	ProjectSection(SolutionItems) = preProject
+		build\2048.exe = build\2048.exe
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7815DB5E-6A99-4693-874B-59B3779B2C29}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB58EDF4-FB9B-4528-B652-76F83F63412D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB58EDF4-FB9B-4528-B652-76F83F63412D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB58EDF4-FB9B-4528-B652-76F83F63412D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB58EDF4-FB9B-4528-B652-76F83F63412D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
