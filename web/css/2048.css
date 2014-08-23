@@ -2,8 +2,9 @@
     height: 24%;
     width: 24%;
     float: left;
-    border: gray dotted 1px;
+    border: #C0C0C0 solid 1px;
     margin: 1px;
+    background: whitesmoke;
 }
 
 #grid span span {
@@ -12,7 +13,7 @@
     line-height: 300%;
     display: block;
     text-align: center;
-    font-family: "Courier New";
+    font-family: "Roboto Condensed", "Courier New";
     font-weight: bolder;
     font-size: 200%;
 }
@@ -20,8 +21,9 @@
 #grid {
     height: 400px;
     width: 400px;
+    margin: 0 auto;
     /* margin-left: 8px; */
-    background: white;
+    background: ghostwhite;
 }
 
 #feedback {
@@ -45,7 +47,7 @@
 
 body {
     /* height: 400px; */
-    width: 400px;
+    width: 600px;
     margin: 0 auto;
     font-family: "Helvetica";
     background: ghostwhite;
@@ -115,8 +117,8 @@ body {
 }
 
 .rounded {
-    -moz-border-radius: 5px 5px 5px 5px; /* rounds corners for firefox */
-    border-radius: 5px 5px 5px 5px; /* rounds corners for other browsers */
+    -moz-border-radius: 10px 10px 10px 10px; /* rounds corners for firefox */
+    border-radius: 10px 10px 10px 10px; /* rounds corners for other browsers */
 }
 
 .center {
