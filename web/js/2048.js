@@ -52,6 +52,16 @@ Game.prototype.InitWith = function (state) {
     this.isOkToGenerate = true;
 }
 
+Game.prototype.Restore = function (game) {
+    if (typeof (game) === "undefined" || game === null) {
+        return;
+    }
+    this.grid = game.grid;
+    this.isWinner = game.isWinner;
+    this.isOkToGenerate = game.isOkToGenerate;
+    this.score = game.score;
+}
+
 Game.prototype.GenerateNew = function () {
     if (this.isOkToGenerate) {
         var tries = 0;
@@ -225,6 +235,7 @@ Game.prototype.SlideRight = function () {
             i++;
         }
     }
+    return this.isOkToGenerate;
 }
 Game.prototype.SlideLeft = function () {
     for (var x = 0; x < this.size; x++) {
@@ -240,6 +251,7 @@ Game.prototype.SlideLeft = function () {
             i++;
         }
     }
+    return this.isOkToGenerate;
 }
 Game.prototype.SlideDown = function () {
     for (var y = 0; y < this.size; y++) {
@@ -255,6 +267,7 @@ Game.prototype.SlideDown = function () {
             i++;
         }
     }
+    return this.isOkToGenerate;
 }
 Game.prototype.SlideUp = function () {
     for (var y = 0; y < this.size; y++) {
@@ -270,6 +283,7 @@ Game.prototype.SlideUp = function () {
             i++;
         }
     }
+    return this.isOkToGenerate;
 }
 
 //}
@@ -297,6 +311,20 @@ Game.prototype.HasEnded = function () {
         }
     }
     return hasEnded;
+}
+
+Game.prototype.Slice = function () {
+    var slice = [];
+    for (var x = 0; x < this.size; x++) {
+        slice.push(this.grid[x].slice());
+    }
+    var game = {
+        grid: slice,
+        isWinner: this.isWinner,
+        isOkToGenerate: this.isOkToGenerate,
+        score: this.score
+    };
+    return game;
 }
 
 //}
@@ -352,9 +380,9 @@ Game2048Console.prototype.Print = function (newtile) {
         $('.row' + newtile.x + '.col' + newtile.y).hide().fadeIn('slow');
     }
     var diff = this.game.score - $('#score span').first().text();
-    if (diff > 0) {
+    if (diff != 0) {
         $('#score span').first().text(this.game.score).stop(true).hide().fadeIn();
-        $('#score span').last().text('  +' + diff).stop(true).fadeIn().fadeOut();
+        $('#score span').last().text(' ' + (diff > 0 ? '+' : '') + diff).stop(true).fadeIn().fadeOut();
     }
 }
 
@@ -387,6 +415,48 @@ $.fn.removeClassPrefix = function (prefix) {
 
 //}
 
+//{ CircularStack
+
+function CircularStack(size) {
+    if (!IsPowerOf2(size)) {
+        throw TypeError("size should be power of 2.");
+    }
+    this.size = size;
+    this.buffer = new Array(size);
+    this.head = 0;
+    this.count = 0;
+}
+
+CircularStack.prototype.Push = function (item) {
+    if (typeof (item) === "undefined" || item === null) {
+        return;
+    }
+    this.buffer[this.head] = item;
+    if (this.count < this.size) {
+        this.count++;
+    }
+    this.head = (this.head + 1) & (this.size - 1); //head = (head +1) % size
+}
+
+CircularStack.prototype.Pop = function () {
+    if (this.IsEmpty()) {
+        return null;
+    }
+    if (this.head === 0) {
+        this.head = this.size - 1;
+    } else {
+        this.head--;
+    }
+    this.count--;
+    return this.buffer[this.head];
+}
+
+CircularStack.prototype.IsEmpty = function () {
+    return this.count === 0;
+}
+
+//}
+
 //{ init
 
 function feedback(message) {
@@ -396,34 +466,59 @@ function feedback(message) {
 $(document).ready(function () {
     console.log('ready!');
     var continueplay = true;
+    var undo = new CircularStack(2 * 4); //2*4=8
     var gameconsole = new Game2048Console(new Game(4));
     document.addEventListener('keydown', function (event) {
+        if (event.keyCode == 8) {
+            console.log('Backspace was pressed');
+            gameconsole.game.Restore(undo.Pop());
+            gameconsole.Print();
+            continueplay = true;
+            feedback('');
+            event.preventDefault();
+        }
         if (continueplay) {
             //{ slide
             if (event.keyCode == 37) {
                 console.log('Left was pressed');
-                gameconsole.game.SlideLeft();
+                var previous = gameconsole.game.Slice();
+                var hasChanged = gameconsole.game.SlideLeft();
+                if (hasChanged) {
+                    undo.Push(previous);
+                }
                 var newtile = gameconsole.game.GenerateNew();
                 gameconsole.Print(newtile);
                 event.preventDefault();
             }
             else if (event.keyCode == 38) {
                 console.log('Up was pressed');
-                gameconsole.game.SlideUp();
+                var previous = gameconsole.game.Slice();
+                var hasChanged = gameconsole.game.SlideUp();
+                if (hasChanged) {
+                    undo.Push(previous);
+                }
                 var newtile = gameconsole.game.GenerateNew();
                 gameconsole.Print(newtile);
                 event.preventDefault();
             }
             else if (event.keyCode == 39) {
                 console.log('Right was pressed');
-                gameconsole.game.SlideRight();
+                var previous = gameconsole.game.Slice();
+                var hasChanged = gameconsole.game.SlideRight();
+                if (hasChanged) {
+                    undo.Push(previous);
+                }
                 var newtile = gameconsole.game.GenerateNew();
                 gameconsole.Print(newtile);
                 event.preventDefault();
             }
             else if (event.keyCode == 40) {
                 console.log('Down was pressed');
-                gameconsole.game.SlideDown();
+                var previous = gameconsole.game.Slice();
+                var hasChanged = gameconsole.game.SlideDown();
+                if (hasChanged) {
+                    undo.Push(previous);
+                }
                 var newtile = gameconsole.game.GenerateNew();
                 gameconsole.Print(newtile);
                 event.preventDefault();
