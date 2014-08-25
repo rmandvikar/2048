@@ -413,6 +413,76 @@ $.fn.removeClassPrefix = function (prefix) {
     return this;
 };
 
+// swipetop, swipedown
+(function () {
+    var supportTouch = $.support.touch,
+            scrollEvent = "touchmove scroll",
+            touchStartEvent = supportTouch ? "touchstart" : "mousedown",
+            touchStopEvent = supportTouch ? "touchend" : "mouseup",
+            touchMoveEvent = supportTouch ? "touchmove" : "mousemove";
+    $.event.special.swipeupdown = {
+        setup: function () {
+            var thisObject = this;
+            var $this = $(thisObject);
+            $this.bind(touchStartEvent, function (event) {
+                var data = event.originalEvent.touches ?
+                        event.originalEvent.touches[0] :
+                        event,
+                        start = {
+                            time: (new Date).getTime(),
+                            coords: [data.pageX, data.pageY],
+                            origin: $(event.target)
+                        },
+                        stop;
+
+                function moveHandler(event) {
+                    if (!start) {
+                        return;
+                    }
+                    var data = event.originalEvent.touches ?
+                            event.originalEvent.touches[0] :
+                            event;
+                    stop = {
+                        time: (new Date).getTime(),
+                        coords: [data.pageX, data.pageY]
+                    };
+
+                    // prevent scrolling
+                    if (Math.abs(start.coords[1] - stop.coords[1]) > 10) {
+                        event.preventDefault();
+                    }
+                }
+                $this
+                    .bind(touchMoveEvent, moveHandler)
+                    .one(touchStopEvent, function (event) {
+                        $this.unbind(touchMoveEvent, moveHandler);
+                        if (start && stop) {
+                            if (stop.time - start.time < 1000 &&
+                                    Math.abs(start.coords[1] - stop.coords[1]) > 30 &&
+                                    Math.abs(start.coords[0] - stop.coords[0]) < 75) {
+                                start.origin
+                                        .trigger("swipeupdown")
+                                        .trigger(start.coords[1] > stop.coords[1] ? "swipeup" : "swipedown");
+                            }
+                        }
+                        start = stop = undefined;
+                    });
+            });
+        }
+    };
+    $.each({
+        swipedown: "swipeupdown",
+        swipeup: "swipeupdown"
+    }, function (event, sourceEvent) {
+        $.event.special[event] = {
+            setup: function () {
+                $(this).bind(sourceEvent, $.noop);
+            }
+        };
+    });
+
+})();
+
 //}
 
 //{ CircularStack
@@ -463,78 +533,84 @@ function feedback(message) {
     $('#feedback').text(message).stop().hide().fadeIn(1000);
 }
 
-$(document).ready(function () {
-    console.log('ready!');
-    var continueplay = true;
-    var undo = new CircularStack(2 * 4); //2*4=8
-    var gameconsole = new Game2048Console(new Game(4));
-    document.addEventListener('keydown', function (event) {
-        if (event.keyCode == 8) {
-            console.log('Backspace was pressed');
-            gameconsole.game.Restore(undo.Pop());
-            gameconsole.Print();
-            continueplay = true;
-            feedback('');
+function ehandler(event) {
+    if (event.keyCode == 8 || event.type == 'tap') {
+        console.log('Backspace was pressed');
+        gameconsole.game.Restore(undo.Pop());
+        gameconsole.Print();
+        continueplay = true;
+        feedback('');
+        event.preventDefault();
+    } else if (event.type == 'taphold') {
+        // ios - do nothing
+        event.preventDefault();
+    }
+    if (continueplay) {
+        //{ slide
+        if (event.keyCode == 37 || event.type == 'swipeleft') {
+            console.log('Left was pressed');
+            var previous = gameconsole.game.Slice();
+            var hasChanged = gameconsole.game.SlideLeft();
+            if (hasChanged) {
+                undo.Push(previous);
+            }
+            var newtile = gameconsole.game.GenerateNew();
+            gameconsole.Print(newtile);
             event.preventDefault();
         }
-        if (continueplay) {
-            //{ slide
-            if (event.keyCode == 37) {
-                console.log('Left was pressed');
-                var previous = gameconsole.game.Slice();
-                var hasChanged = gameconsole.game.SlideLeft();
-                if (hasChanged) {
-                    undo.Push(previous);
-                }
-                var newtile = gameconsole.game.GenerateNew();
-                gameconsole.Print(newtile);
-                event.preventDefault();
+        else if (event.keyCode == 38 || event.type == 'swipeup') {
+            console.log('Up was pressed');
+            var previous = gameconsole.game.Slice();
+            var hasChanged = gameconsole.game.SlideUp();
+            if (hasChanged) {
+                undo.Push(previous);
             }
-            else if (event.keyCode == 38) {
-                console.log('Up was pressed');
-                var previous = gameconsole.game.Slice();
-                var hasChanged = gameconsole.game.SlideUp();
-                if (hasChanged) {
-                    undo.Push(previous);
-                }
-                var newtile = gameconsole.game.GenerateNew();
-                gameconsole.Print(newtile);
-                event.preventDefault();
-            }
-            else if (event.keyCode == 39) {
-                console.log('Right was pressed');
-                var previous = gameconsole.game.Slice();
-                var hasChanged = gameconsole.game.SlideRight();
-                if (hasChanged) {
-                    undo.Push(previous);
-                }
-                var newtile = gameconsole.game.GenerateNew();
-                gameconsole.Print(newtile);
-                event.preventDefault();
-            }
-            else if (event.keyCode == 40) {
-                console.log('Down was pressed');
-                var previous = gameconsole.game.Slice();
-                var hasChanged = gameconsole.game.SlideDown();
-                if (hasChanged) {
-                    undo.Push(previous);
-                }
-                var newtile = gameconsole.game.GenerateNew();
-                gameconsole.Print(newtile);
-                event.preventDefault();
-            }
-            //}
-
-            if (gameconsole.game.IsWinner()) {
-                feedback("Winner!!1");
-                continueplay = false;
-            }
-            if (gameconsole.game.HasEnded()) {
-                feedback("Sorry, you lost. Try again!");
-                continueplay = false;
-            }
+            var newtile = gameconsole.game.GenerateNew();
+            gameconsole.Print(newtile);
+            event.preventDefault();
         }
-    }, true);
+        else if (event.keyCode == 39 || event.type == 'swiperight') {
+            console.log('Right was pressed');
+            var previous = gameconsole.game.Slice();
+            var hasChanged = gameconsole.game.SlideRight();
+            if (hasChanged) {
+                undo.Push(previous);
+            }
+            var newtile = gameconsole.game.GenerateNew();
+            gameconsole.Print(newtile);
+            event.preventDefault();
+        }
+        else if (event.keyCode == 40 || event.type == 'swipedown') {
+            console.log('Down was pressed');
+            var previous = gameconsole.game.Slice();
+            var hasChanged = gameconsole.game.SlideDown();
+            if (hasChanged) {
+                undo.Push(previous);
+            }
+            var newtile = gameconsole.game.GenerateNew();
+            gameconsole.Print(newtile);
+            event.preventDefault();
+        }
+        //}
+
+        if (gameconsole.game.IsWinner()) {
+            feedback("Winner!!1");
+            continueplay = false;
+        }
+        if (gameconsole.game.HasEnded()) {
+            feedback("Sorry, you lost. Try again!");
+            continueplay = false;
+        }
+    }
+}
+
+var continueplay = true;
+var undo = new CircularStack(2 * 4); //2*4=8
+var gameconsole = new Game2048Console(new Game(4));
+$(document).ready(function () {
+    console.log('ready!');
+    document.addEventListener('keydown', ehandler, true);
+    $('#grid').on('swiperight swipeleft swipeup swipedown tap taphold', ehandler);
     gameconsole.Start();
 });
 

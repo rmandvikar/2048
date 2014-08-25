@@ -2,8 +2,8 @@
     height: 24%;
     width: 24%;
     float: left;
-    border: #C0C0C0 solid 1px;
-    margin: 1px;
+    border: #C0C0C0 solid 1px; /* cannot put % */
+    margin: 0.25%;
     background: whitesmoke;
 }
 
@@ -22,7 +22,6 @@
     height: 400px;
     width: 400px;
     margin: 0 auto;
-    /* margin-left: 8px; */
     background: ghostwhite;
 }
 
@@ -37,17 +36,20 @@
 }
 
 #score {
-    /* text-align: right; */
     margin: 25px 0 0 0;
 }
 
 #footer {
     margin-top: 50px;
+    clear: both;
+}
+
+#wrapper {
+    width: 500px;
+    margin: 0 auto;
 }
 
 body {
-    /* height: 400px; */
-    width: 600px;
     margin: 0 auto;
     font-family: "Helvetica";
     background: ghostwhite;
@@ -123,4 +125,20 @@ body {
 
 .center {
     text-align: center;
+}
+
+.ui-icon-loading {
+    background: url(http://code.jquery.com/mobile/1.1.0-rc.1/images/ajax-loader.png);
+    background-size: 46px 46px;
+    width:46px;
+    height:46px;
+    -webkit-transform: rotate(360deg);
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+}
+@-webkit-keyframes spin {
+    from {-webkit-transform: rotate(0deg);}
+    to {-webkit-transform: rotate(360deg);}
 }
