@@ -1,6 +1,6 @@
 #grid > span {
-    height: 24%;
-    width: 24%;
+    height: 23.5%;
+    width: 23.5%;
     float: left;
     border: #C0C0C0 solid 1px; /* cannot put % */
     margin: 0.25%;
@@ -45,7 +45,7 @@
 }
 
 #wrapper {
-    width: 500px;
+    width: 600px;
     margin: 0 auto;
 }
 
@@ -141,4 +141,76 @@ body {
 @-webkit-keyframes spin {
     from {-webkit-transform: rotate(0deg);}
     to {-webkit-transform: rotate(360deg);}
+}
+
+/* mobile styles */
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    #wrapper {
+        width: 480px;
+    }
+    #grid {
+        height: 400px;
+        width: 400px;
+    }
+}
+
+/* Smartphones (landscape) ----------- */
+@media only screen and (min-width : 321px) {
+}
+
+/* Smartphones (portrait) ----------- */
+@media only screen and (max-width : 320px) {
+    #wrapper {
+        width: 320px;
+    }
+    #grid {
+        height: 300px;
+        width: 300px;
+    }
+}
+
+/* iPads (portrait and landscape) ----------- */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {
+    #wrapper {
+        width: 600px;
+    }
+    #grid {
+        height: 400px;
+        width: 400px;
+    }
+}
+
+/* iPads (landscape) ----------- */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape) {
+}
+
+/* iPads (portrait) ----------- */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait) {
+}
+
+/* Desktops and laptops ----------- */
+@media only screen and (min-width : 1224px) {
+}
+
+/* Large screens ----------- */
+@media only screen and (min-width : 1824px) {
+}
+
+/* iPhone 4 ----------- */
+@media only screen and (-webkit-min-device-pixel-ratio : 1.5), only screen and (min-device-pixel-ratio : 1.5) {
+    html {
+        -webkit-text-size-adjust: none;
+    }
+    #wrapper {
+        width: 360px;
+    }
+    #grid {
+        height: 300px;
+        width: 300px;
+    }
+    #grid span span {
+        line-height: 225%;
+    }
 }
