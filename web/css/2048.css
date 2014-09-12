@@ -26,17 +26,30 @@
 }
 
 #feedback {
-    margin: 10px 0px 25px 0px;
+    margin: 0px 0px 25px 0px;
+    padding: 10px 0px 0px 0px;
     /* line-height: 35px; */
     height: 25px;
+    clear: both;
 }
 
 #instructions {
     margin: 50px 0px 0px 0px;
 }
 
-#score {
+#scoreswrapper {
     margin: 25px 0 0 0;
+}
+
+#score {
+    float: left;
+    margin-left: 50px;
+}
+
+#best {
+    float: right;
+    margin-right: 50px;
+    display: none;
 }
 
 #footer {

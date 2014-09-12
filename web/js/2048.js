@@ -361,6 +361,7 @@ Game2048Console.prototype.Start = function () {
     ]);
     */
     this.Print();
+    this.LoadBestScore();
 }
 
 Game2048Console.prototype.Print = function (newtile) {
@@ -397,6 +398,41 @@ Game2048Console.prototype.GetExponentBase2 = function (n) {
         e++;
     }
     return e;
+}
+
+Game2048Console.prototype.SaveBestScore = function () {
+    if (localStorage) {
+        var score = this.game.score;
+        if (localStorage['2048.state']) {
+            var state = JSON.parse(localStorage['2048.state']);
+        }
+        state = state || { best: 0 };
+        if (score > state.best) {
+            localStorage['2048.state'] = JSON.stringify({ best: score });
+        }
+    }
+}
+
+Game2048Console.prototype.LoadBestScore = function () {
+    if (localStorage) {
+        var best = 0;
+        if (localStorage['2048.state']) {
+            var state = JSON.parse(localStorage['2048.state']);
+            if (state) {
+                best = state.best;
+            }
+        }
+        if (best > 0) {
+            $('#best').show();
+            $('#best span').text(best).stop(true).hide().fadeIn();
+        }
+    }
+}
+
+Game2048Console.prototype.ClearState = function () {
+    if (localStorage) {
+        localStorage.removeItem('2048.state');
+    }
 }
 
 //}
@@ -602,6 +638,11 @@ function ehandler(event) {
             continueplay = false;
         }
     }
+}
+
+window.onbeforeunload = function () {
+    console.log('onbeforeunload');
+    gameconsole.SaveBestScore();
 }
 
 var continueplay = true;
