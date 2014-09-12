@@ -346,8 +346,8 @@ function Game2048Console(game) {
 }
 
 Game2048Console.prototype.Start = function () {
-    this.game.Init();
-    /*
+    //this.game.Init();
+    
     this.game.InitWith([
         //[2, 0, 0, 2],
         //[2, 2, 2, 2],
@@ -356,10 +356,10 @@ Game2048Console.prototype.Start = function () {
         [0, 4, 2, 2],
         [4, 0, 2, 2],
         [2, 4, 4, 2],
-        [2, 4, 2, 4],
-        //[1024, 1024, 0, 0],
+        //[2, 4, 2, 4],
+        [1024, 1024, 0, 0],
     ]);
-    */
+    
     this.Print();
 }
 
@@ -525,12 +525,17 @@ CircularStack.prototype.IsEmpty = function () {
     return this.count === 0;
 }
 
+CircularStack.prototype.Clear = function () {
+    this.head = 0;
+    this.count = 0;
+}
+
 //}
 
 //{ init
 
 function feedback(message) {
-    $('#feedback').text(message).stop().hide().fadeIn(1000);
+    $('#feedback').html(message).stop().hide().fadeIn(1000);
 }
 
 function ehandler(event) {
@@ -594,7 +599,7 @@ function ehandler(event) {
         //}
 
         if (gameconsole.game.IsWinner()) {
-            feedback("Winner!!1");
+            feedback("Winner!!1 <a href='#'>Play again?</a>");
             continueplay = false;
         }
         if (gameconsole.game.HasEnded()) {
@@ -604,14 +609,63 @@ function ehandler(event) {
     }
 }
 
-var continueplay = true;
-var undo = new CircularStack(2 * 4); //2*4=8
-var gameconsole = new Game2048Console(new Game(4));
+var continueplay;
+var undo;
+var gameconsole;
+
+function newgame() {
+    continueplay = true;
+    undo = new CircularStack(2 * 4); //2*4=8
+    gameconsole = new Game2048Console(new Game(4));
+    gameconsole.Start();
+    feedback('');
+}
+
+function init() {
+    if (!loadState()) {
+        newgame();
+    }
+}
+
+function loadState() {
+    try {
+        continueplay = true;
+        undo = new CircularStack(2 * 4); //2*4=8
+        gameconsole = new Game2048Console(new Game(4));
+        feedback('');
+        var state = localStorage['2048.state'];
+        if (state) {
+            gameconsole.game.Restore(state.game);
+            //undo.Restore(state.game);
+            gameconsole.Start();
+            return true;
+        }
+    }
+    catch (e) {
+        console.error(e);
+    }
+    return false;
+}
+
+function saveState() {
+    if (localStorage) {
+        var state = JSON.stringify(gameconsole.game);
+        console.log(state);
+        localStorage['2048.state', state];
+    }
+}
+
+window.onbeforeunload = function() {
+    console.log('onbeforeunload');
+    saveState();
+}
+
 $(document).ready(function () {
     console.log('ready!');
-    document.addEventListener('keydown', ehandler, true);
+    $(document).on('keydown', ehandler);
     $('#grid').on('swiperight swipeleft swipeup swipedown tap taphold', ehandler);
-    gameconsole.Start();
+    $('#feedback').on('click', 'a', newgame);
+    init();
 });
 
 //}
