@@ -609,7 +609,7 @@ var undo = new CircularStack(2 * 4); //2*4=8
 var gameconsole = new Game2048Console(new Game(4));
 $(document).ready(function () {
     console.log('ready!');
-    document.addEventListener('keydown', ehandler, true);
+    $(document).on('keydown', ehandler);
     $('#grid').on('swiperight swipeleft swipeup swipedown tap taphold', ehandler);
     gameconsole.Start();
 });
