@@ -25,6 +25,7 @@ function Game(size) {
     this.isOkToGenerate = true;
     this.newElements = [2, 2, 2, 2, 2, 2, 2, 2, 4, 4]; //80-20%
     this.score = 0;
+    this.countOf1BitsInSize = CountOf1Bits(size - 1);
 }
 
 Game.prototype.Init = function () {
@@ -167,7 +168,7 @@ Game.prototype.GetRandomXY = function (shuffled) {
     var xys = [];
     for (var i = 0; i < shuffled.length; i++) {
         var xy = shuffled[i];
-        var x = (xy & (~(this.size - 1))) >> CountOf1Bits(this.size - 1); // xy / size
+        var x = (xy & (~(this.size - 1))) >> this.countOf1BitsInSize; // xy / size
         var y = xy & (this.size - 1); // xy % size
         xys.push({ x: x, y: y });
     }
