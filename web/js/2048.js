@@ -187,10 +187,13 @@ function CountOf1Bits(n) {
 //{ Slide
 
 Game.prototype.Slide = function (buffer) {
-    var backup = this.buffer.slice();
     var target = 0;
     var s1 = 0;
     var s2 = 0;
+    var joinIndexs = new Array(this.size);
+    for (var i = 0; i < this.size; i++) {
+        joinIndexs[i] = false;
+    }
     while (true) {
         while (s1 < this.size && this.buffer[s1] == 0) {
             s1++;
@@ -207,6 +210,7 @@ Game.prototype.Slide = function (buffer) {
             this.isWinner |= (this.buffer[target] == 2048);
             this.isOkToGenerate |= true;
             this.score += this.buffer[target];
+            joinIndexs[target] = true;
             s1 = s2 + 1;
         } else {
             this.buffer[target] = this.buffer[s1];
@@ -219,72 +223,100 @@ Game.prototype.Slide = function (buffer) {
         this.buffer[target] = 0;
         target++;
     }
-    return backup;
+    return joinIndexs;
 }
 
 Game.prototype.SlideRight = function () {
+    var joins = [];
     for (var x = 0; x < this.size; x++) {
         var i = 0;
         for (var y = this.size - 1; y >= 0; y--) {
             this.buffer[i] = this.grid[x][y];
             i++;
         }
-        var before = this.Slide(this.buffer);
+        var joinIndexs = this.Slide(this.buffer);
         i = 0;
         for (var y = this.size - 1; y >= 0; y--) {
             this.grid[x][y] = this.buffer[i];
+            if (joinIndexs[i]) {
+                joins.push({ x: x, y: y });
+            }
             i++;
         }
     }
-    return this.isOkToGenerate;
+    return {
+        hasChanged: this.isOkToGenerate,
+        joins: joins
+    };
 }
 Game.prototype.SlideLeft = function () {
+    var joins = [];
     for (var x = 0; x < this.size; x++) {
         var i = 0;
         for (var y = 0; y < this.size; y++) {
             this.buffer[i] = this.grid[x][y];
             i++;
         }
-        var before = this.Slide(this.buffer);
+        var joinIndexs = this.Slide(this.buffer);
         i = 0;
         for (var y = 0; y < this.size; y++) {
             this.grid[x][y] = this.buffer[i];
+            if (joinIndexs[i]) {
+                joins.push({ x: x, y: y });
+            }
             i++;
         }
     }
-    return this.isOkToGenerate;
+    return {
+        hasChanged: this.isOkToGenerate,
+        joins: joins
+    };
 }
 Game.prototype.SlideDown = function () {
+    var joins = [];
     for (var y = 0; y < this.size; y++) {
         var i = 0;
         for (var x = this.size - 1; x >= 0; x--) {
             this.buffer[i] = this.grid[x][y];
             i++;
         }
-        var before = this.Slide(this.buffer);
+        var joinIndexs = this.Slide(this.buffer);
         i = 0;
         for (var x = this.size - 1; x >= 0; x--) {
             this.grid[x][y] = this.buffer[i];
+            if (joinIndexs[i]) {
+                joins.push({ x: x, y: y });
+            }
             i++;
         }
     }
-    return this.isOkToGenerate;
+    return {
+        hasChanged: this.isOkToGenerate,
+        joins: joins
+    };
 }
 Game.prototype.SlideUp = function () {
+    var joins = [];
     for (var y = 0; y < this.size; y++) {
         var i = 0;
         for (var x = 0; x < this.size; x++) {
             this.buffer[i] = this.grid[x][y];
             i++;
         }
-        var before = this.Slide(this.buffer);
+        var joinIndexs = this.Slide(this.buffer);
         i = 0;
         for (var x = 0; x < this.size; x++) {
             this.grid[x][y] = this.buffer[i];
+            if (joinIndexs[i]) {
+                joins.push({ x: x, y: y });
+            }
             i++;
         }
     }
-    return this.isOkToGenerate;
+    return {
+        hasChanged: this.isOkToGenerate,
+        joins: joins
+    };
 }
 
 //}
@@ -365,7 +397,7 @@ Game2048Console.prototype.Start = function () {
     this.LoadBestScore();
 }
 
-Game2048Console.prototype.Print = function (newtile) {
+Game2048Console.prototype.Print = function (newtile, joins) {
     for (var x = 0; x < this.game.size; x++) {
         for (var y = 0; y < this.game.size; y++) {
             var $tile = $('.row' + x + '.col' + y);
@@ -380,6 +412,11 @@ Game2048Console.prototype.Print = function (newtile) {
     }
     if (newtile) {
         $('.row' + newtile.x + '.col' + newtile.y).hide().fadeIn('slow');
+    }
+    if (joins) {
+        for (var i = 0; i < joins.length; i++) {
+            $('.row' + joins[i].x + '.col' + joins[i].y).addClassTemporarily("join", 50);
+        }
     }
     var diff = this.game.score - $('#score span').first().text();
     if (diff != 0) {
@@ -446,6 +483,15 @@ $.fn.removeClassPrefix = function (prefix) {
             return c.lastIndexOf(prefix, 0) !== 0;
         });
         el.className = $.trim(classes.join(" "));
+    });
+    return this;
+};
+
+$.fn.addClassTemporarily = function (className, time) {
+    this.each(function (i, el) {
+        $(el).addClass(className).delay(time).queue(function () {
+            $(this).removeClass(className).dequeue();
+        });
     });
     return this;
 };
@@ -587,45 +633,45 @@ function ehandler(event) {
         if (event.keyCode == 37 || event.type == 'swipeleft') {
             console.log('Left was pressed');
             var previous = gameconsole.game.Slice();
-            var hasChanged = gameconsole.game.SlideLeft();
-            if (hasChanged) {
+            var slideResult = gameconsole.game.SlideLeft();
+            if (slideResult.hasChanged) {
                 undo.Push(previous);
             }
             var newtile = gameconsole.game.GenerateNew();
-            gameconsole.Print(newtile);
+            gameconsole.Print(newtile, slideResult.joins);
             event.preventDefault();
         }
         else if (event.keyCode == 38 || event.type == 'swipeup') {
             console.log('Up was pressed');
             var previous = gameconsole.game.Slice();
-            var hasChanged = gameconsole.game.SlideUp();
-            if (hasChanged) {
+            var slideResult = gameconsole.game.SlideUp();
+            if (slideResult.hasChanged) {
                 undo.Push(previous);
             }
             var newtile = gameconsole.game.GenerateNew();
-            gameconsole.Print(newtile);
+            gameconsole.Print(newtile, slideResult.joins);
             event.preventDefault();
         }
         else if (event.keyCode == 39 || event.type == 'swiperight') {
             console.log('Right was pressed');
             var previous = gameconsole.game.Slice();
-            var hasChanged = gameconsole.game.SlideRight();
-            if (hasChanged) {
+            var slideResult = gameconsole.game.SlideRight();
+            if (slideResult.hasChanged) {
                 undo.Push(previous);
             }
             var newtile = gameconsole.game.GenerateNew();
-            gameconsole.Print(newtile);
+            gameconsole.Print(newtile, slideResult.joins);
             event.preventDefault();
         }
         else if (event.keyCode == 40 || event.type == 'swipedown') {
             console.log('Down was pressed');
             var previous = gameconsole.game.Slice();
-            var hasChanged = gameconsole.game.SlideDown();
-            if (hasChanged) {
+            var slideResult = gameconsole.game.SlideDown();
+            if (slideResult.hasChanged) {
                 undo.Push(previous);
             }
             var newtile = gameconsole.game.GenerateNew();
-            gameconsole.Print(newtile);
+            gameconsole.Print(newtile, slideResult.joins);
             event.preventDefault();
         }
         //}
